@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>말해보카 스타일 초5-2 한국사 대모험</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Font (Jua & Noto Sans KR) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .font-jua {
+      font-family: 'Jua', sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-pop {
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex justify-center items-center p-2 sm:p-4">
+
+  <!-- Main Container -->
+  <div id="app" class="w-full max-w-md bg-white rounded-3xl shadow-2xl border-4 border-amber-500 overflow-hidden min-h-[680px] max-h-[92vh] flex flex-col justify-between relative">
+    
+    <!-- Modal: User Setup -->
+    <div id="modal-setup" class="hidden absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+      <div class="bg-white w-full rounded-3xl p-6 shadow-2xl text-center border-4 border-amber-400 animate-pop">
+        <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl text-amber-600 shadow-inner">
+          <i class="fa-solid fa-crown"></i>
+        </div>
+        <h2 class="text-2xl font-bold font-jua text-amber-800 mb-2">한국사 대모험 시작하기</h2>
+        <p class="text-sm text-slate-600 mb-6">신분 승진과 함께하는 초등 5-2 역사 퀴즈!</p>
+        
+        <input type="text" id="input-nickname" placeholder="닉네임을 입력하세요 (예: 세종대왕)" 
+               class="w-full p-3.5 border-2 border-amber-300 rounded-2xl mb-4 font-bold text-center focus:outline-none focus:border-amber-500 text-lg shadow-inner">
+        
+        <button onclick="saveUserProfile()" class="w-full bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-jua text-xl py-3.5 rounded-2xl shadow-lg transition-transform border-b-4 border-amber-700">
+          모험 시작하기 🚀
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal: Auto Promotion Celebration -->
+    <div id="modal-promotion" class="hidden absolute inset-0 bg-slate-900/85 backdrop-blur-md z-50 flex items-center justify-center p-6">
+      <div class="bg-white w-full rounded-3xl p-6 shadow-2xl text-center border-4 border-indigo-500 animate-pop">
+        <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-3 text-4xl text-indigo-600 shadow-inner">
+          🎉
+        </div>
+        <h2 class="text-2xl font-bold font-jua text-indigo-900 mb-1">관직 자동 승진!</h2>
+        <p class="text-xs text-slate-500 mb-4">쌀 50석을 달성하여 신분이 상승했습니다!</p>
+
+        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-4 mb-5">
+          <div id="promo-rank-icon" class="text-5xl mb-2">👑</div>
+          <div id="promo-rank-title" class="font-jua text-xl text-indigo-900">관직명</div>
+          <div id="promo-rank-desc" class="text-xs text-indigo-700 mt-1 font-bold">새로운 신분 직급</div>
+        </div>
+
+        <button onclick="closePromotionModal()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-jua text-lg py-3 rounded-2xl shadow-lg border-b-4 border-indigo-800">
+          확인했습니다 🚀
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal: Official Rank Shop -->
+    <div id="modal-rank-shop" class="hidden absolute inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex flex-col p-4 animate-pop">
+      <div class="bg-white w-full h-full rounded-3xl p-4 shadow-2xl flex flex-col overflow-hidden border-4 border-indigo-500">
+        <!-- Shop Header -->
+        <div class="flex justify-between items-center mb-3 pb-2 border-b-2 border-slate-100">
+          <h3 class="font-jua text-xl text-indigo-900"><i class="fa-solid fa-award text-amber-500 mr-2"></i>조선 관직 도감</h3>
+          <div class="flex items-center gap-2">
+            <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
+              🌾 <span id="shop-user-diamonds">0</span>석
+            </span>
+            <button onclick="closeRankShop()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold p-1">
+              &times;
+            </button>
+          </div>
+        </div>
+        
+        <p class="text-xs text-slate-500 mb-2 text-center">🌾 쌀 50석 수집 시 다음 관직으로 자동 승진합니다!</p>
+
+        <!-- Rank List -->
+        <div id="rank-list" class="flex-1 overflow-y-auto space-y-2 pr-1"></div>
+      </div>
+    </div>
+
+    <!-- Header / User Status Bar -->
+    <header class="bg-gradient-to-r from-amber-500 to-orange-500 p-4 text-white shadow-md relative z-10 flex flex-col gap-2">
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 bg-white/20 rounded-2xl flex items-center justify-center text-2xl shadow-inner border border-white/30">
+            🏯
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span id="user-name" class="font-bold text-base tracking-wide">학습자</span>
+              <span id="user-rank-badge" class="bg-amber-800/80 text-amber-200 text-xs px-2 py-0.5 rounded-full font-bold border border-amber-400/50">
+                1급: 천민 (노비)
+              </span>
+            </div>
+            <div class="text-xs text-amber-100 flex items-center gap-2 mt-0.5">
+              <span>보유 녹봉: <strong id="user-score" class="text-white">0</strong>석 🌾</span>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="openRankShop()" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold px-3 py-2 rounded-xl shadow border border-indigo-400 flex items-center gap-1.5">
+          <i class="fa-solid fa-crown"></i> 관직 도감
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto p-4 bg-slate-50 relative flex flex-col">
+      
+      <!-- SCREEN 1: Stage Selection -->
+      <div id="screen-stages" class="space-y-4">
+        <div class="bg-amber-50 border-2 border-amber-200 rounded-2xl p-3 text-center shadow-sm">
+          <h2 class="font-jua text-lg text-amber-900"><i class="fa-solid fa-scroll mr-1"></i> 초등 5학년 한국사 대모험</h2>
+          <p class="text-xs text-slate-600 mt-0.5">순서대로 단계를 깨고 다음 시대로 도전해보세요!</p>
+        </div>
+
+        <div id="stage-list-container" class="space-y-3"></div>
+      </div>
+
+      <!-- SCREEN 2: Quiz Play Area -->
+      <div id="screen-quiz" class="hidden flex-1 flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <button onclick="confirmExitQuiz()" class="text-slate-400 hover:text-slate-600 text-sm font-bold flex items-center gap-1 bg-slate-200 px-2.5 py-1 rounded-xl">
+              <i class="fa-solid fa-chevron-left"></i> 나가기
+            </button>
+            <span id="quiz-topic-title" class="font-jua text-sm text-slate-700 bg-amber-100 px-3 py-1 rounded-full border border-amber-300">
+              소단원명
+            </span>
+            <span id="quiz-progress-text" class="text-xs font-black text-amber-600 bg-amber-50 px-2.5 py-1 rounded-xl border border-amber-200">
+              1 / 5
+            </span>
+          </div>
+
+          <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden mb-4">
+            <div id="quiz-progress-bar" class="bg-gradient-to-r from-amber-400 to-orange-500 h-full w-0 transition-all duration-300"></div>
+          </div>
+
+          <div class="bg-white border-2 border-amber-200 rounded-3xl p-5 shadow-lg relative min-h-[180px] flex flex-col justify-center animate-pop">
+            <div id="quiz-difficulty-badge" class="absolute top-3 right-3 text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+              🌾 완료 시 36석 획득
+            </div>
+            <p id="quiz-question-text" class="text-base sm:text-lg font-bold text-slate-800 leading-relaxed text-center my-2">
+              질문 텍스트가 여기에 표시됩니다.
+            </p>
+          </div>
+        </div>
+
+        <div id="quiz-feedback" class="hidden my-2 p-3 rounded-2xl text-center text-sm font-bold animate-pop"></div>
+
+        <div id="quiz-options-container" class="space-y-2.5 my-2"></div>
+
+        <div id="quiz-next-container" class="hidden my-2">
+          <button onclick="advanceNextQuestion()" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-jua text-lg py-3 rounded-2xl shadow-lg border-b-4 border-amber-700 active:scale-98 transition">
+            다음 문제로 ➔
+          </button>
+        </div>
+      </div>
+
+      <!-- SCREEN 3: Incorrect Notes Screen -->
+      <div id="screen-wrong-notes" class="hidden space-y-4">
+        <div class="bg-rose-50 border-2 border-rose-200 rounded-2xl p-3 text-center shadow-sm">
+          <h2 class="font-jua text-lg text-rose-900"><i class="fa-solid fa-book-bookmark mr-1"></i> 나만의 오답 노트</h2>
+          <p class="text-xs text-slate-600 mt-0.5">틀렸던 문제를 다시 복습하여 내 것으로 만들어 보세요!</p>
+        </div>
+
+        <div id="wrong-notes-list" class="space-y-3"></div>
+        <div id="wrong-notes-action-container" class="pt-2"></div>
+      </div>
+
+      <!-- SCREEN 4: My Custom Quiz Screen -->
+      <div id="screen-my-quizzes" class="hidden space-y-4">
+        <div class="bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3 text-center shadow-sm">
+          <h2 class="font-jua text-lg text-indigo-900"><i class="fa-solid fa-pen-to-square mr-1"></i> 나만의 퀴즈함</h2>
+          <p class="text-xs text-slate-600 mt-0.5">내가 직접 만든 문제로 출제자이자 학습자가 되어 보세요!</p>
+        </div>
+
+        <div class="bg-white border-2 border-indigo-200 rounded-2xl p-4 shadow-sm space-y-3">
+          <h3 id="my-quiz-form-title" class="font-jua text-base text-indigo-900 border-b pb-1.5"><i class="fa-solid fa-plus-circle text-indigo-500 mr-1"></i> 새 문제 만들기</h3>
+          
+          <input type="hidden" id="my-quiz-edit-id" value="">
+
+          <div>
+            <label class="text-xs font-bold text-slate-600 block mb-1">문제 (질문)</label>
+            <textarea id="my-quiz-q" rows="2" placeholder="예: 견훤이 완산주에 세운 나라의 이름은?" class="w-full p-2.5 text-xs border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-400 font-bold"></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs font-bold text-emerald-700 block mb-1">① 정답 보기</label>
+              <input type="text" id="my-quiz-opt1" placeholder="예: 후백제" class="w-full p-2 text-xs border-2 border-emerald-300 rounded-xl focus:outline-none focus:border-emerald-500 font-bold bg-emerald-50/30">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-600 block mb-1">② 오답 보기 1</label>
+              <input type="text" id="my-quiz-opt2" placeholder="예: 후고구려" class="w-full p-2 text-xs border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-400">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-600 block mb-1">③ 오답 보기 2</label>
+              <input type="text" id="my-quiz-opt3" placeholder="예: 발해" class="w-full p-2 text-xs border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-400">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-600 block mb-1">④ 오답 보기 3</label>
+              <input type="text" id="my-quiz-opt4" placeholder="예: 가야" class="w-full p-2 text-xs border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-400">
+            </div>
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-600 block mb-1">해설 / 정답 설명</label>
+            <input type="text" id="my-quiz-exp" placeholder="예: 견훤은 신라 말 완산주(전주)를 도읍으로 후백제를 건국했습니다." class="w-full p-2 text-xs border-2 border-slate-200 rounded-xl focus:outline-none focus:border-indigo-400">
+          </div>
+
+          <div class="flex gap-2">
+            <button id="btn-save-my-quiz" onclick="addCustomQuiz()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-jua text-sm py-2.5 rounded-xl shadow transition border-b-2 border-indigo-800">
+              ➕ 문제 저장하기
+            </button>
+            <button id="btn-cancel-edit-quiz" onclick="cancelEditCustomQuiz()" class="hidden bg-slate-400 hover:bg-slate-500 active:scale-95 text-white font-jua text-sm px-4 py-2.5 rounded-xl shadow transition">
+              취소
+            </button>
+          </div>
+        </div>
+
+        <div id="my-quiz-action-container"></div>
+        <div id="my-quiz-list" class="space-y-3"></div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 p-2.5 flex justify-around text-center text-xs text-slate-500 relative z-10">
+      <button onclick="showScreen('stages')" class="flex flex-col items-center gap-1 hover:text-amber-600 font-bold transition">
+        <i class="fa-solid fa-map text-base"></i>
+        <span>시대별</span>
+      </button>
+      <button onclick="openRankShop()" class="flex flex-col items-center gap-1 hover:text-indigo-600 font-bold transition">
+        <i class="fa-solid fa-crown text-base"></i>
+        <span>관직 도감</span>
+      </button>
+      <button onclick="showScreen('wrong-notes')" class="flex flex-col items-center gap-1 hover:text-rose-600 font-bold transition">
+        <i class="fa-solid fa-book-open text-base"></i>
+        <span>오답 노트</span>
+      </button>
+      <button onclick="showScreen('my-quizzes')" class="flex flex-col items-center gap-1 hover:text-indigo-600 font-bold transition">
+        <i class="fa-solid fa-square-plus text-base text-indigo-600"></i>
+        <span class="text-indigo-700">내 퀴즈함</span>
+      </button>
+    </footer>
+
+  </div>
+
+  <script>
+    // System Data & State - Expanded Official Ranks (20 Steps)
+    const OFFICIAL_RANKS = [
+      { id: 1, title: "천민 (노비)", req: 0, desc: "모험의 출발점입니다.", icon: "🧹" },
+      { id: 2, title: "평민 (농민)", req: 50, desc: "열심히 농사를 지어 녹봉을 획득했습니다.", icon: "🌾" },
+      { id: 3, title: "종9품 참봉", req: 100, desc: "하급 관직에 진출하였습니다.", icon: "📜" },
+      { id: 4, title: "정9품 훈도", req: 150, desc: "향교에서 유학을 가르칩니다.", icon: "📖" },
+      { id: 5, title: "종8품 봉사", req: 200, desc: "관청의 실무 업무를 담당합니다.", icon: "✒️" },
+      { id: 6, title: "정8품 사관", req: 250, desc: "역사를 기록하는 사초를 작성합니다.", icon: "📚" },
+      { id: 7, title: "종7품 직장", req: 300, desc: "각 관서의 중앙 행정을 맡습니다.", icon: "🏛️" },
+      { id: 8, title: "정7품 현감", req: 350, desc: "작은 고을을 다스리는 수령이 되었습니다.", icon: "🏯" },
+      { id: 9, title: "종6품 주부", req: 400, desc: "중요 관서의 행정을 지휘합니다.", icon: "📋" },
+      { id: 10, title: "정6품 현령", req: 450, desc: "중간 규모 고을을 지배합니다.", icon: "🏘️" },
+      { id: 11, title: "종5품 판관", req: 500, desc: "지방 관아의 사법과 행정을 조율합니다.", icon: "⚖️" },
+      { id: 12, title: "정5품 령", req: 550, desc: "중앙 핵심 관서의 수장이 되었습니다.", icon: "🎖️" },
+      { id: 13, title: "종4품 군수", req: 600, desc: "한 군(郡)의 백성을 책임집니다.", icon: "🏞️" },
+      { id: 14, title: "정4품 부사", req: 650, desc: "대도시와 중요 지역을 다스립니다.", icon: "🏰" },
+      { id: 15, title: "종3품 첨절제사", req: 700, desc: "지방 진영의 군사를 총괄합니다.", icon: "🛡️" },
+      { id: 16, title: "정3품 목사", req: 750, desc: "큰 목(州)의 행정과 군사를 다스립니다.", icon: "🐎" },
+      { id: 17, title: "종2품 관찰사", req: 800, desc: "한 도(道) 전체를 총괄 지휘하는 대감입니다.", icon: "🚩" },
+      { id: 18, title: "정2품 판서", req: 850, desc: "6조 중 하나의 부서를 총괄하는 장관입니다.", icon: "📜" },
+      { id: 19, title: "종1품 좌찬성", req: 900, desc: "의정부에서 영의정을 보좌하는 대상입니다.", icon: "🦅" },
+      { id: 20, title: "정1품 영의정", req: 950, desc: "조선 최고 관직! 모든 신하의 으뜸이 되었습니다!", icon: "👑" }
+    ];
+
+    const HISTORY_DATA = [
+      {
+        era: "1. 선사 및 고조선",
+        topics: [
+          {
+            id: "prehistoric_old",
+            title: "구석기 시대",
+            questions: [
+              { id: "po1", q: "구석기 시대 사람들은 돌을 깨뜨려 만든 어떤 도구를 사용했나요?", opts: ["뗀석기", "간석기", "철기", "청동기"], correctOpt: "뗀석기", diff: "A", exp: "구석기 시대에는 돌을 깨뜨려 만든 뗀석기를 사용했습니다." },
+              { id: "po2", q: "구석기 시대 사람들의 주요 생활 모습으로 올바른 것은?", opts: ["사냥과 채집을 하며 이동 생활", "벼농사를 지으며 정착 생활", "아파트에서 생활", "가축만 키우며 상점 이용"], correctOpt: "사냥과 채집을 하며 이동 생활", diff: "A", exp: "구석기인들은 먹을거리를 찾아 이동하며 사냥과 채집을 했습니다." },
+              { id: "po3", q: "구석기 시대 사람들이 추위와 짐승을 피하기 위해 살았던 집은?", opts: ["동굴이나 막집", "기와집", "초가집", "아파트"], correctOpt: "동굴이나 막집", diff: "A", exp: "구석기 시대에는 동굴이나 임시로 지은 막집에서 살았습니다." },
+              { id: "po4", q: "구석기 시대를 대표하는 만능 뗀석기 도구는 무엇일까요?", opts: ["주먹도끼", "빗살무늬 토기", "가락바퀴", "명도전"], correctOpt: "주먹도끼", diff: "B", exp: "주먹도끼는 사냥, 가죽 벗기기 등 다양한 용도로 쓰인 대표적 뗀석기입니다." },
+              { id: "po5", q: "구석기 시대 사람들이 이동 생활을 한 가장 큰 이유는 무엇일까요?", opts: ["먹을거리를 얻기 위해서", "여행을 좋아해서", "이사하는 취미가 있어서", "날씨가 매일 변해서"], correctOpt: "먹을거리를 얻기 위해서", diff: "A", exp: "사냥감과 열매를 찾아 먹을거리가 있는 곳으로 이동했습니다." }
+            ]
+          },
+          {
+            id: "prehistoric_new",
+            title: "신석기 시대",
+            questions: [
+              { id: "pn1", q: "신석기 시대에 식량을 저장하고 조리하기 위해 만든 토기는?", opts: ["빗살무늬 토기", "민무늬 토기", "청자", "백자"], correctOpt: "빗살무늬 토기", diff: "A", exp: "신석기 시대를 대표하는 토기는 겉면에 빗살 모양을 새긴 빗살무늬 토기입니다." },
+              { id: "pn2", q: "신석기 시대에 돌을 갈아서 정교하게 만든 도구는?", opts: ["간석기", "뗀석기", "청동검", "철퇴"], correctOpt: "간석기", diff: "A", exp: "신석기 시대에는 돌을 뾰족하고 매끄럽게 갈아 만든 간석기를 사용했습니다." },
+              { id: "pn3", q: "신석기 시대에 옷이나 그물을 만들기 위해 실을 뽑던 도구는?", opts: ["가락바퀴", "주먹도끼", "거푸집", "앙부일구"], correctOpt: "가락바퀴", diff: "B", exp: "가락바퀴에 실을 감아 옷이나 그물을 짓는 데 사용했습니다." },
+              { id: "pn4", q: "신석기 시대 사람들이 정착 생활을 하면서 지은 집은?", opts: ["움집", "막집", "귀틀집", "고인돌"], correctOpt: "움집", diff: "A", exp: "땅을 약간 파고 기둥을 세운 움집을 지어 정착 생활을 시작했습니다." },
+              { id: "pn5", q: "신석기 시대에 정착 생활이 가능해진 가장 중요한 변화는?", opts: ["농경과 가축 사육 시작", "철기 무기 개발", "컴퓨터 사용", "자동차 발명"], correctOpt: "농경과 가축 사육 시작", diff: "B", exp: "농사를 짓고 가축을 키우기 시작하면서 한곳에 머물러 살게 되었습니다." }
+            ]
+          },
+          {
+            id: "gojoseon",
+            title: "고조선",
+            questions: [
+              { id: "gj1", q: "우리 역사상 최초로 세워진 국가의 이름은?", opts: ["고조선", "조선", "고구려", "마한"], correctOpt: "고조선", diff: "A", exp: "고조선은 우리 역사상 최초의 국가입니다." },
+              { id: "gj2", q: "고조선을 건국한 인물은 누구일까요?", opts: ["단군왕검", "주몽", "박혁거세", "김수로"], correctOpt: "단군왕검", diff: "A", exp: "단군왕검이 청동기 문화를 바탕으로 고조선을 건국했습니다." },
+              { id: "gj3", q: "고조선 사회의 법과 규칙을 잘 보여주는 것은?", opts: ["8조법", "경국대전", "10조목", "헌법"], correctOpt: "8조법", diff: "B", exp: "고조선에는 생명과 재산을 보호하는 8조의 법이 있었습니다." },
+              { id: "gj4", q: "고조선이 청동기 바탕의 나라임을 알려주는 대표적 무덤은?", opts: ["탁자식 고인돌", "무령왕릉", "천마총", "굴식 돌방무덤"], correctOpt: "탁자식 고인돌", diff: "B", exp: "탁자 모양의 거대한 고인돌은 고조선의 지배층 무덤입니다." },
+              { id: "gj5", q: "고조선 8조법을 통해 알 수 있는 당시 사회 모습이 아닌 것은?", opts: ["신용카드 사용", "생명 존중", "사유 재산 존재", "화폐 사용"], correctOpt: "신용카드 사용", diff: "A", exp: "8조법을 통해 곡식과 재산을 중시하고 생명을 보호했음을 알 수 있습니다." }
+            ]
+          }
+        ]
+      },
+      {
+        era: "2. 삼국 시대",
+        topics: [
+          {
+            id: "goguryeo",
+            title: "고구려",
+            questions: [
+              { id: "g1", q: "고구려를 건국한 인물은 누구일까요?", opts: ["주몽", "온조", "박혁거세", "김수로"], correctOpt: "주몽", diff: "A", exp: "주몽(동명성왕)이 졸본에 고구려를 건국했습니다." },
+              { id: "g2", q: "만주까지 영토를 크게 넓혀 전성기를 이끈 고구려의 왕은?", opts: ["광개토대왕", "소수림왕", "성왕", "진흥왕"], correctOpt: "광개토대왕", diff: "A", exp: "광개토대왕은 만주와 한반도 북부까지 영토를 넓혔습니다." },
+              { id: "g3", q: "불교를 받아들이고 인재를 양성하기 위해 '태학'을 세운 고구려의 왕은?", opts: ["소수림왕", "광개토대왕", "장수왕", "동천왕"], correctOpt: "소수림왕", diff: "B", exp: "소수림왕은 불교 수용, 태학 설립, 율령 반포로 국가 체제를 정비했습니다." },
+              { id: "g4", q: "수도를 평양으로 옮기고 남쪽으로 영토를 넓힌 장수왕은 누구의 아들일까요?", opts: ["광개토대왕", "고국원왕", "소수림왕", "의자왕"], correctOpt: "장수왕", diff: "A", exp: "장수왕은 광개토대왕의 아들로 남진 정책을 추진했습니다." },
+              { id: "g5", q: "광개토대왕의 커다란 업적이 새겨진 대표적인 역사적 유물은?", opts: ["광개토대왕릉비", "북한산비", "순수비", "칠지도"], correctOpt: "광개토대왕릉비", diff: "A", exp: "장수왕이 아버지 광개토대왕의 업적을 기리기 위해 세웠습니다." }
+            ]
+          },
+          {
+            id: "baekje",
+            title: "백제",
+            questions: [
+              { id: "b1", q: "한강 유역에서 백제를 건국한 인물은?", opts: ["온조", "주몽", "박혁거세", "대조영"], correctOpt: "온조", diff: "A", exp: "주몽의 아들 온조가 한강 유역(위례성)에 백제를 세웠습니다." },
+              { id: "b2", q: "4세기 백제의 최고 전성기를 이끈 왕은?", opts: ["근초고왕", "성왕", "무령왕", "의자왕"], correctOpt: "근초고왕", diff: "A", exp: "근초고왕 때 백제는 마한을 정복하고 해외로 진출하며 최고 전성기를 누렸습니다." },
+              { id: "b3", q: "백제가 일본과의 교류와 우호를 표시하며 전해준 칼의 이름은?", opts: ["칠지도", "비형랑", "사인참사검", "환두대도"], correctOpt: "칠지도", diff: "B", exp: "가지가 7개 달린 칼 칠지도는 백제의 뛰어난 철기 기술과 일본 교류를 보여줍니다." },
+              { id: "b4", q: "공주(웅진)에 위치하며 왕의 왕관 장식이 함께 발견된 백제의 왕릉은?", opts: ["무령왕릉", "천마총", "황남대총", "장군총"], correctOpt: "무령왕릉", diff: "B", exp: "무령왕릉은 백제 무령왕과 왕비의 무덤으로 수많은 보물이 발견되었습니다." },
+              { id: "b5", q: "백제의 뛰어난 금속 공예 기술과 종교적 예술관을 보여주는 국보급 문화유산은?", opts: ["백제금동대향로", "석굴암", "첨성대", "다보탑"], correctOpt: "백제금동대향로", diff: "A", exp: "부여에서 발굴된 금동대향로는 백제 문화의 정수를 보여줍니다." }
+            ]
+          },
+          {
+            id: "silla",
+            title: "신라",
+            questions: [
+              { id: "s1", q: "알 신화와 함께 신라(서라벌)를 건국한 인물은?", opts: ["박혁거세", "김알지", "석탈해", "김유신"], correctOpt: "박혁거세", diff: "A", exp: "박혁거세가 서라벌(경주)에서 신라를 건국했습니다." },
+              { id: "s2", q: "화랑도를 정비하고 한강 유역을 얻어 전성기를 연 신라 왕은?", opts: ["진흥왕", "법흥왕", "지증왕", "태종무열왕"], correctOpt: "진흥왕", diff: "A", exp: "진흥왕은 화랑도를 개편하고 영토를 넓혀 순수비를 세웠습니다." },
+              { id: "s3", q: "신라 선덕여왕 때 별과 하늘을 관측하기 위해 경주에 세운 건축물은?", opts: ["첨성대", "다보탑", "석가탑", "황룡사 9층 목탑"], correctOpt: "첨성대", diff: "A", exp: "첨성대는 동양에서 가장 오래된 천문관측대입니다." },
+              { id: "s4", q: "신라의 옛 수도로 천마총, 첨성대 등 수많은 유적이 남아있는 도시 이름은?", opts: ["경주", "공주", "부여", "전주"], correctOpt: "경주", diff: "A", exp: "신라의 천년 수도는 금성, 즉 오늘날의 경주입니다." },
+              { id: "s5", q: "신라 왕족의 화려한 세력과 금속 공예를 잘 보여주는 대표적 유물은?", opts: ["신라 금관", "칠지도", "팔만대장경", "주먹도끼"], correctOpt: "신라 금관", diff: "A", exp: "경주 대형 고분에서 발굴된 금관은 신라의 뛰어난 황금 문화를 보여줍니다." }
+            ]
+          },
+          {
+            id: "gaya",
+            title: "가야",
+            questions: [
+              { id: "gy1", q: "김수로왕이 낙동강 하류 지역에 건국한 나라(연맹)는?", opts: ["가야", "발해", "동예", "옥저"], correctOpt: "가야", diff: "A", exp: "김수로왕이 금관가야를 중심으로 가야 연맹을 세웠습니다." },
+              { id: "gy2", q: "가야가 풍부한 철 생산 기술을 바탕으로 만든 대표적인 자원과 장비는?", opts: ["철제 무기와 갑옷", "나무 활", "청동 거울", "종이 투구"], correctOpt: "철제 무기와 갑옷", diff: "A", exp: "가야는 철을 다루는 기술이 뛰어나 튼튼한 철제 갑옷과 무기를 만들었습니다." },
+              { id: "gy3", q: "가야 지역 무덤에서 많이 발견되는 부드럽고 능숙하게 구워진 유물은?", opts: ["가야 토기", "고려청자", "조선백자", "빗살무늬토기"], correctOpt: "가야 토기", diff: "B", exp: "가야 토기는 굽다리 접시 등 세련된 모양으로 일본 문화에도 영향을 주었습니다." },
+              { id: "gy4", q: "낙동강 유역의 풍부한 철을 바탕으로 덩이쇠를 만들어 교류했던 곳은?", opts: ["낙랑 및 왜", "수나라", "당나라", "아라비아"], correctOpt: "낙랑 및 왜", diff: "B", exp: "가야는 철과 덩이쇠를 화폐처럼 사용하며 낙랑, 일본(왜)과 수출 거래했습니다." },
+              { id: "gy5", q: "가야의 장인들이 섬세하게 만들어 무덤에 남긴 화려한 금속 장신구는?", opts: ["가야 금관", "칠지도", "팔만대장경", "주먹도끼"], correctOpt: "가야 금관", diff: "B", exp: "가야도 훌륭한 금속 세공 기술로 아름다운 금관을 제작했습니다." }
+            ]
+          }
+        ]
+      },
+      {
+        era: "3. 남북국 시대",
+        topics: [
+          {
+            id: "balhae",
+            title: "발해",
+            questions: [
+              { id: "bh1", q: "고구려가 멸망한 후 고구려 유민과 말갈족을 이끌고 발해를 건국한 인물은?", opts: ["대조영", "왕건", "견훤", "궁예"], correctOpt: "대조영", diff: "A", exp: "고구려 장수 출신 대조영이 동모산에 발해를 건국했습니다." },
+              { id: "bh2", q: "발해가 고구려 문화와 전통을 계승했음을 증명하는 무덤 및 난방 구조는?", opts: ["온돌과 굴식 돌방무덤", "피라미드", "움집", "고인돌"], correctOpt: "온돌과 굴식 돌방무덤", diff: "B", exp: "발해의 온돌과 무덤 양식은 고구려 문화와 매우 일치합니다." },
+              { id: "bh3", q: "발해의 기와와 연꽃무늬 장식이 닮은 상징적인 옛 나라는?", opts: ["고구려", "신라", "백제", "가야"], correctOpt: "고구려", diff: "A", exp: "발해의 기와, 수막새 등의 모양은 고구려 기와 기법을 그대로 계승했습니다." },
+              { id: "bh4", q: "발해의 영토가 북쪽 만주 땅까지 크게 번창하여 당나라가 붙여준 명예로운 명칭은?", opts: ["해동성국", "동방의 등불", "천조국", "신국의 나라"], correctOpt: "해동성국", diff: "B", exp: "해동성국은 '바다 동쪽의 번성한 나라'라는 뜻입니다." },
+              { id: "bh5", q: "발해의 영토 위치는 한반도 기준 어디쪽에 자리 잡고 있었을까요?", opts: ["한반도 북부와 만주 지역", "제주도", "한반도 남부", "일본 열도"], correctOpt: "한반도 북부와 만주 지역", diff: "A", exp: "발해는 고구려의 옛 땅인 북부와 만주 지역의 광대한 영토를 차지했습니다." }
+            ]
+          },
+          {
+            id: "unified_silla",
+            title: "통일신라",
+            questions: [
+              { id: "us1", q: "삼국 통일을 완수하고 당나라 군대를 몰아낸 신라의 왕은?", opts: ["문무왕", "태종무열왕", "진흥왕", "경순왕"], correctOpt: "문무왕", diff: "A", exp: "문무왕은 나당 전쟁에서 승리해 삼국 통일을 완성했습니다." },
+              { id: "us2", q: "완도에 '청해진'을 설치하여 해적을 소탕하고 동아시아 바다 무역을 지배한 인물은?", opts: ["장보고", "최치원", "원효", "김유신"], correctOpt: "장보고", diff: "A", exp: "장보고는 청해진을 중심으로 당, 신라, 일본을 잇는 무역을 다스렸습니다." },
+              { id: "us3", q: "경주 토함산에 조성된 세계적 수준의 돌로 만든 불교 석굴 유산은?", opts: ["석굴암", "첨성대", "미륵사지", "무령왕릉"], correctOpt: "석굴암", diff: "A", exp: "석굴암은 신라 불교 예술과 과학 기술의 결정체입니다." },
+              { id: "us4", q: "불국사에 있는 화려하고 다채로운 조형미를 자랑하는 신라의 탑 이름은?", opts: ["다보탑", "정림사지 5층석탑", "모전석탑", "황룡사 탑"], correctOpt: "다보탑", diff: "B", exp: "불국사의 다보탑과 석가탑은 신라 석조 예술의 대표 유산입니다." },
+              { id: "us5", q: "신라의 스님으로 '나무아미타불'만 외우면 누구나 극락에 갈 수 있다며 불교를 대중화한 분은?", opts: ["원효대사", "의상대사", "혜초", "자장율사"], correctOpt: "원효대사", diff: "A", exp: "원효대사는 해골물 깨달음 이후 일반 백성들에게 불교를 널리 전파했습니다." }
+            ]
+          }
+        ]
+      },
+      {
+        era: "4. 후삼국 시대",
+        topics: [
+          {
+            id: "later_baekje",
+            title: "후백제 (견훤)",
+            questions: [
+              { id: "lb1", q: "완산주(전주)에 도읍을 정하고 후백제를 건국한 인물은?", opts: ["견훤", "궁예", "왕건", "대조영"], correctOpt: "견훤", diff: "A", exp: "신라 군인 출신 견훤이 전주에 후백제를 세웠습니다." },
+              { id: "lb2", q: "견훤이 후백제의 도읍으로 삼았던 완산주는 오늘날 어느 도시일까요?", opts: ["전주", "광주", "경주", "충주"], correctOpt: "전주", diff: "A", exp: "완산주는 지금의 전라북도 전주시입니다." },
+              { id: "lb3", q: "후백제를 세운 견훤의 원래 출신 신분 직업은 무엇이었을까요?", opts: ["신라의 군인", "상인", "농민", "스님"], correctOpt: "신라의 군인", diff: "B", exp: "견훤은 신라 서남해안을 지키던 군인이었습니다." },
+              { id: "lb4", q: "후백제를 세운 견훤이 자신을 스스로 어느 옛 나라의 계승자라고 선포했을까요?", opts: ["백제", "고구려", "신라", "가야"], correctOpt: "백제", diff: "A", exp: "견훤은 의자왕의 원한을 풀겠다며 백제 계승을 내세웠습니다." },
+              { id: "lb5", q: "후백제 내부에서 왕위 문제로 다툼이 일어나 금산사에 갇혔던 인물은?", opts: ["견훤", "신검", "궁예", "왕건"], correctOpt: "견훤", diff: "B", exp: "아들 신검에 의해 금산사에 갇혔던 견훤은 탈출 후 왕건에게 망명했습니다." }
+            ]
+          },
+          {
+            id: "later_goguryeo",
+            title: "후고구려 (궁예)",
+            questions: [
+              { id: "lg1", q: "송악(개성)에서 후고구려를 건국한 인물은?", opts: ["궁예", "견훤", "왕건", "이성계"], correctOpt: "궁예", diff: "A", exp: "궁예가 개성에서 후고구려를 건국했습니다." },
+              { id: "lg2", q: "궁예가 도읍을 옮기고 '태봉'이라 나라 이름을 고쳤던 강원도 지역은?", opts: ["철원", "춘천", "강릉", "원주"], correctOpt: "철원", diff: "B", exp: "궁예는 수도를 철원으로 옮기고 나라 이름을 태봉으로 바꿨습니다." },
+              { id: "lg3", q: "궁예가 사람의 마음을 꿰뚫어 볼 수 있다고 주장하며 신하들을 위협했던 말은?", opts: ["관심법", "독심술", "마음술", "궁예법"], correctOpt: "관심법", diff: "A", exp: "궁예는 관심법으로 신하와 백성을 의심하고 괴롭혔습니다." },
+              { id: "lg4", q: "궁예가 나라를 다스릴 때 신하가 되었으나 훗날 궁예를 몰아내고 왕이 된 인물은?", opts: ["왕건", "견훤", "신검", "최승로"], correctOpt: "왕건", diff: "A", exp: "신하들의 추대로 왕건이 궁예를 내쫓고 고려를 세웠습니다." },
+              { id: "lg5", q: "궁예가 세운 후고구려가 자리를 잡았던 주요 북부 영역은 어느 나라의 신하와 주민들이 많았을까요?", opts: ["옛 고구려 지역 유민들", "옛 백제 유민들", "신라 왕족들", "당나라 상인들"], correctOpt: "옛 고구려 지역 유민들", diff: "B", exp: "궁예는 고구려 영토 주민들의 호응을 받아 나라를 확장했습니다." }
+            ]
+          },
+          {
+            id: "later_three_life",
+            title: "후삼국 시대의 고려의 생활",
+            questions: [
+              { id: "ltl1", q: "태조 왕건이 지방 호족 세력을 내편으로 든든하게 끌어들이기 위해 펼친 정책은?", opts: ["혼인 정책", "전쟁 정책", "노비 정책", "체벌 정책"], correctOpt: "혼인 정책", diff: "A", exp: "왕건은 지방 호족의 딸들과 결혼하여 정권을 안정시켰습니다." },
+              { id: "ltl2", q: "태조 왕건이 오랜 전쟁에 지친 백성들의 삶을 돌보기 위해 실시한 세금 정책은?", opts: ["세금을 대폭 줄여줌", "세금을 2배 늘림", "세금으로 금만 거둠", "세금을 전액 폐지함"], correctOpt: "세금을 대폭 줄여줌", diff: "A", exp: "백성들의 부담을 줄이고 삶을 안정시키기 위해 세금을 대폭 낮췄습니다." },
+              { id: "ltl3", q: "태조 왕건이 후대 왕들이 나라를 다스릴 때 지켜야 할 지침으로 남긴 가르침은?", opts: ["훈요 10조", "8조법", "경국대전", "삼국유사"], correctOpt: "훈요 10조", diff: "B", exp: "훈요 10조에는 고려 왕들이 유의해야 할 국정 지침이 담겨 있습니다." },
+              { id: "ltl4", q: "신라의 마지막 왕인 경순왕이 항복해 왔을 때 왕건이 취한 태도는?", opts: ["우대하고 따뜻하게 포용함", "감옥에 가둠", "신라로 돌려보냄", "노비로 만듦"], correctOpt: "우대하고 따뜻하게 포용함", diff: "A", exp: "경순왕을 높이 대우하여 신라 유민들의 마음을 사로잡았습니다." },
+              { id: "ltl5", q: "후삼국 시대에 유행하며 왕건의 개성 도읍 선정에 영향을 준 학설 및 사상은?", opts: ["풍수지리설", "성리학", "실학", "서학"], correctOpt: "풍수지리설", diff: "B", exp: "땅의 기운과 지형을 보고 도읍을 정하는 풍수지리설이 크게 유행했습니다." }
+            ]
+          }
+        ]
+      },
+      {
+        era: "5. 고려 시대",
+        topics: [
+          {
+            id: "goryeo_unified",
+            title: "고려",
+            questions: [
+              { id: "gor1", q: "고려가 후백제를 제압하고 후삼국을 완전 통일한 연도는 언제일까요?", opts: ["936년", "668년", "1392년", "1910년"], correctOpt: "936년", diff: "B", exp: "태조 왕건은 936년 후삼국을 완벽하게 통일했습니다." },
+              { id: "gor2", q: "거란의 1차 침입 때 뛰어난 외교 담판으로 싸우지 않고 '강동 6주'를 얻어낸 고려 인물은?", opts: ["서희", "강감찬", "최무선", "김윤후"], correctOpt: "서희", diff: "A", exp: "서희는 거란 장수 소손녕과의 외교 담판으로 강동 6주를 획득했습니다." },
+              { id: "gor3", q: "귀주에서 거란의 10만 대군을 크게 무찌른 '귀주대첩'의 고려 장수는?", opts: ["강감찬", "서희", "을지문덕", "이순신"], correctOpt: "강감찬", diff: "A", exp: "강감찬 장군이 귀주에서 거란 대군을 대패시켰습니다." },
+              { id: "gor4", q: "몽골 침입을 부처님의 힘으로 극복하고자 정성껏 조각한 목판 유산은?", opts: ["팔만대장경", "직지심체요절", "삼국사기", "조선왕조실록"], correctOpt: "팔만대장경", diff: "A", exp: "합천 해인사의 팔만대장경판은 고려의 위대한 문화유산입니다." },
+              { id: "gor5", q: "아라비아 상인들과 무역하며 세계에 'Korea'라는 이름을 널리 알린 고려의 항구는?", opts: ["벽란도", "청해진", "부산항", "울산항"], correctOpt: "벽란도", diff: "A", exp: "개성 근처의 예성강 어귀 벽란도는 국제적 무역항이었습니다." }
+            ]
+          }
+        ]
+      }
+    ];
+
+    // Helper: Flatten all topic IDs in sequential order
+    const ALL_TOPIC_IDS = [];
+    HISTORY_DATA.forEach(era => {
+      era.topics.forEach(t => {
+        ALL_TOPIC_IDS.push(t.id);
+      });
+    });
+
+    // User State Variable
+    let userData = {
+      name: "학습자",
+      score: 0,
+      rankId: 1,
+      clearedStageIds: [], // Stores cleared stage IDs for sequential progression
+      wrongNotes: [],
+      myCustomQuizzes: []
+    };
+
+    // Quiz Session State
+    let currentTopicId = "";
+    let currentQuizList = [];
+    let currentQuizIndex = 0;
+    let currentTopicTitle = "";
+    let sessionScoreEarned = 0;
+    let hasFailedCurrentSession = false; // Track if user got any answer wrong in current stage
+
+    function saveUserData() {
+      localStorage.setItem("koreanHistoryAppData_v2", JSON.stringify(userData));
+    }
+
+    function loadUserData() {
+      const saved = localStorage.getItem("koreanHistoryAppData_v2");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          userData = { ...userData, ...parsed };
+          if (!Array.isArray(userData.clearedStageIds)) {
+            userData.clearedStageIds = [];
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+      if (!userData.name || userData.name === "학습자") {
+        document.getElementById("modal-setup").classList.remove("hidden");
+      }
+      checkAutoPromotion();
+    }
+
+    function saveUserProfile() {
+      const nameInput = document.getElementById("input-nickname").value.trim();
+      if (!nameInput) {
+        alert("닉네임을 입력하세요!");
+        return;
+      }
+      userData.name = nameInput;
+      saveUserData();
+      updateUIHeader();
+      document.getElementById("modal-setup").classList.add("hidden");
+    }
+
+    function updateUIHeader() {
+      document.getElementById("user-name").innerText = userData.name || "학습자";
+      document.getElementById("user-score").innerText = userData.score;
+
+      const currentRank = OFFICIAL_RANKS.find(r => r.id === userData.rankId) || OFFICIAL_RANKS[0];
+      document.getElementById("user-rank-badge").innerText = `${currentRank.id}급: ${currentRank.title}`;
+    }
+
+    function checkAutoPromotion() {
+      if (userData.score >= 50) {
+        const nextRank = OFFICIAL_RANKS.find(r => r.id === userData.rankId + 1);
+        if (nextRank) {
+          userData.score -= 50;
+          userData.rankId += 1;
+          saveUserData();
+          updateUIHeader();
+
+          document.getElementById("promo-rank-icon").innerText = nextRank.icon;
+          document.getElementById("promo-rank-title").innerText = nextRank.title;
+          document.getElementById("promo-rank-desc").innerText = nextRank.desc;
+          document.getElementById("modal-promotion").classList.remove("hidden");
+        }
+      }
+    }
+
+    function closePromotionModal() {
+      document.getElementById("modal-promotion").classList.add("hidden");
+      checkAutoPromotion();
+    }
+
+    function openRankShop() {
+      document.getElementById("shop-user-diamonds").innerText = userData.score;
+      const listEl = document.getElementById("rank-list");
+      listEl.innerHTML = "";
+
+      OFFICIAL_RANKS.forEach(rank => {
+        const isCurrent = rank.id === userData.rankId;
+        const isUnlocked = rank.id <= userData.rankId;
+
+        const item = document.createElement("div");
+        item.className = `p-3.5 rounded-2xl border-2 flex items-center justify-between transition ${
+          isCurrent 
+            ? "bg-amber-50 border-amber-400 shadow-md" 
+            : isUnlocked 
+              ? "bg-slate-50 border-slate-200 opacity-90" 
+              : "bg-slate-100 border-slate-200 text-slate-400"
+        }`;
+
+        item.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="text-3xl">${rank.icon}</div>
+            <div>
+              <div class="font-jua text-sm flex items-center gap-1.5 ${isCurrent ? 'text-amber-900' : 'text-slate-800'}">
+                <span>${rank.title}</span>
+                ${isCurrent ? '<span class="bg-amber-500 text-white text-[10px] px-1.5 py-0.2 rounded-md font-bold">현재 관직</span>' : ''}
+              </div>
+              <div class="text-xs text-slate-500 mt-0.5">${rank.desc}</div>
+            </div>
+          </div>
+          <div class="text-xs font-bold text-slate-500">
+            ${isUnlocked ? '✅ 달성' : '🔒 승진 대기'}
+          </div>
+        `;
+        listEl.appendChild(item);
+      });
+
+      document.getElementById("modal-rank-shop").classList.remove("hidden");
+    }
+
+    function closeRankShop() {
+      document.getElementById("modal-rank-shop").classList.add("hidden");
+    }
+
+    function showScreen(screenId) {
+      document.getElementById("screen-stages").classList.add("hidden");
+      document.getElementById("screen-quiz").classList.add("hidden");
+      document.getElementById("screen-wrong-notes").classList.add("hidden");
+      document.getElementById("screen-my-quizzes").classList.add("hidden");
+
+      if (screenId === "stages") {
+        document.getElementById("screen-stages").classList.remove("hidden");
+        renderStages();
+      } else if (screenId === "wrong-notes") {
+        document.getElementById("screen-wrong-notes").classList.remove("hidden");
+        renderWrongNotesScreen();
+      } else if (screenId === "my-quizzes") {
+        document.getElementById("screen-my-quizzes").classList.remove("hidden");
+        renderMyQuizzesScreen();
+      }
+    }
+
+    function renderStages() {
+      const container = document.getElementById("stage-list-container");
+      container.innerHTML = "";
+
+      HISTORY_DATA.forEach(eraObj => {
+        const eraCard = document.createElement("div");
+        eraCard.className = "bg-white border-2 border-amber-200 rounded-2xl p-3.5 shadow-sm space-y-2.5";
+        
+        let topicsHtml = eraObj.topics.map(topic => {
+          const topicIndex = ALL_TOPIC_IDS.indexOf(topic.id);
+          const isCleared = userData.clearedStageIds.includes(topic.id);
+          // Unlocked if it is the first stage OR if the previous stage in ALL_TOPIC_IDS has been cleared
+          const isUnlocked = (topicIndex === 0) || userData.clearedStageIds.includes(ALL_TOPIC_IDS[topicIndex - 1]);
+
+          if (isUnlocked) {
+            return `
+              <button onclick="startQuizSession('${topic.id}', '${topic.title}')" class="w-full text-left bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 p-3 rounded-xl flex justify-between items-center transition group active:scale-98">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg ${isCleared ? 'bg-emerald-500 text-white' : 'bg-amber-100 text-amber-700 group-hover:bg-amber-500 group-hover:text-white'} flex items-center justify-center font-bold text-xs transition">
+                    ${isCleared ? '<i class="fa-solid fa-check"></i>' : '<i class="fa-solid fa-flag"></i>'}
+                  </div>
+                  <div>
+                    <div class="font-bold text-xs sm:text-sm text-slate-800 flex items-center gap-1.5">
+                      <span>${topic.title}</span>
+                      ${isCleared ? '<span class="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.2 rounded-md font-bold">완료</span>' : ''}
+                    </div>
+                    <div class="text-[11px] text-slate-400">총 ${topic.questions.length}문항 (36석🌾)</div>
+                  </div>
+                </div>
+                <div class="text-amber-500 font-bold text-xs flex items-center gap-1">
+                  ${isCleared ? '재도전' : '도전'} <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                </div>
+              </button>
+            `;
+          } else {
+            return `
+              <div class="w-full text-left bg-slate-100 border border-slate-200 p-3 rounded-xl flex justify-between items-center opacity-60 cursor-not-allowed">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center font-bold text-xs">
+                    <i class="fa-solid fa-lock"></i>
+                  </div>
+                  <div>
+                    <div class="font-bold text-xs sm:text-sm text-slate-500">${topic.title}</div>
+                    <div class="text-[11px] text-slate-400">이전 단계를 먼저 클리어하세요</div>
+                  </div>
+                </div>
+                <div class="text-slate-400 font-bold text-xs">
+                  잠김 🔒
+                </div>
+              </div>
+            `;
+          }
+        }).join("");
+
+        eraCard.innerHTML = `
+          <h3 class="font-jua text-base text-amber-900 border-b border-amber-100 pb-1.5 flex items-center gap-1.5">
+            <i class="fa-solid fa-landmark text-amber-600"></i> ${eraObj.era}
+          </h3>
+          <div class="space-y-2">
+            ${topicsHtml}
+          </div>
+        `;
+
+        container.appendChild(eraCard);
+      });
+    }
+
+    function startQuizSession(topicId, topicTitle) {
+      currentTopicId = topicId;
+      currentTopicTitle = topicTitle;
+      currentQuizList = [];
+
+      HISTORY_DATA.forEach(era => {
+        era.topics.forEach(t => {
+          if (t.id === topicId) {
+            currentQuizList = [...t.questions];
+          }
+        });
+      });
+
+      if (currentQuizList.length === 0) return;
+
+      currentQuizIndex = 0;
+      sessionScoreEarned = 0;
+      hasFailedCurrentSession = false;
+
+      document.getElementById("screen-stages").classList.add("hidden");
+      document.getElementById("screen-quiz").classList.remove("hidden");
+      document.getElementById("quiz-topic-title").innerText = topicTitle;
+
+      renderCurrentQuestion();
+    }
+
+    function confirmExitQuiz() {
+      if (confirm("퀴즈 도전을 중단하고 나가시겠습니까?")) {
+        showScreen("stages");
+      }
+    }
+
+    function renderCurrentQuestion() {
+      const qData = currentQuizList[currentQuizIndex];
+      const total = currentQuizList.length;
+
+      document.getElementById("quiz-progress-text").innerText = `${currentQuizIndex + 1} / ${total}`;
+      const progressPercent = ((currentQuizIndex) / total) * 100;
+      document.getElementById("quiz-progress-bar").style.width = `${progressPercent}%`;
+
+      document.getElementById("quiz-question-text").innerText = qData.q;
+
+      const diffBadge = document.getElementById("quiz-difficulty-badge");
+      diffBadge.innerText = `🌾 완주 시 36석 획득`;
+
+      const optionsContainer = document.getElementById("quiz-options-container");
+      optionsContainer.innerHTML = "";
+
+      document.getElementById("quiz-feedback").classList.add("hidden");
+      document.getElementById("quiz-next-container").classList.add("hidden");
+
+      let shuffledOpts = [...qData.opts];
+      shuffledOpts.sort(() => Math.random() - 0.5);
+
+      shuffledOpts.forEach(optText => {
+        const btn = document.createElement("button");
+        btn.className = "w-full bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold p-3.5 rounded-2xl shadow-sm text-left text-sm transition active:scale-98 flex items-center justify-between";
+        btn.innerHTML = `
+          <span>${optText}</span>
+          <i class="fa-regular fa-circle text-slate-300"></i>
+        `;
+        btn.onclick = () => handleAnswerSelect(optText, qData, btn);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function renderCurrentQuestion() {
+      const qData = currentQuizList[currentQuizIndex];
+      const total = currentQuizList.length;
+
+      document.getElementById("quiz-progress-text").innerText = `${currentQuizIndex + 1} / ${total}`;
+      const progressPercent = ((currentQuizIndex) / total) * 100;
+      document.getElementById("quiz-progress-bar").style.width = `${progressPercent}%`;
+
+      document.getElementById("quiz-question-text").innerText = qData.q;
+
+      const diffBadge = document.getElementById("quiz-difficulty-badge");
+      diffBadge.innerText = `🌾 완주 시 36석 획득`;
+
+      const optionsContainer = document.getElementById("quiz-options-container");
+      optionsContainer.innerHTML = "";
+
+      document.getElementById("quiz-feedback").classList.add("hidden");
+      document.getElementById("quiz-next-container").classList.add("hidden");
+
+      // Fisher-Yates 셔플 알고리즘을 사용하여 보기가 모든 위치에 골고루 퍼지도록 설정
+      let shuffledOpts = [...qData.opts];
+      for (let i = shuffledOpts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledOpts[i], shuffledOpts[j]] = [shuffledOpts[j], shuffledOpts[i]];
+      }
+
+      shuffledOpts.forEach(optText => {
+        const btn = document.createElement("button");
+        btn.className = "w-full bg-white hover:bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold p-3.5 rounded-2xl shadow-sm text-left text-sm transition active:scale-98 flex items-center justify-between";
+        btn.innerHTML = `
+          <span>${optText}</span>
+          <i class="fa-regular fa-circle text-slate-300"></i>
+        `;
+        btn.onclick = () => handleAnswerSelect(optText, qData, btn);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function handleAnswerSelect(selectedOpt, qData, clickedBtn) {
+      const optionsContainer = document.getElementById("quiz-options-container");
+      const buttons = optionsContainer.querySelectorAll("button");
+      buttons.forEach(b => b.disabled = true);
+
+      const feedbackEl = document.getElementById("quiz-feedback");
+      feedbackEl.classList.remove("hidden");
+
+      if (selectedOpt === qData.correctOpt) {
+        clickedBtn.className = "w-full bg-emerald-500 border-2 border-emerald-600 text-white font-bold p-3.5 rounded-2xl shadow-md text-left text-sm flex items-center justify-between";
+        clickedBtn.innerHTML = `<span>${selectedOpt}</span> <i class="fa-solid fa-circle-check"></i>`;
+
+        feedbackEl.className = "my-2 p-3 rounded-2xl text-center text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 animate-pop";
+        feedbackEl.innerHTML = `🎉 정답입니다!<br><span class="font-normal text-[11px]">${qData.exp}</span>`;
+      } else {
+        // Mark session as failed (cannot pass stage if even 1 question is wrong)
+        hasFailedCurrentSession = true;
+
+        clickedBtn.className = "w-full bg-rose-500 border-2 border-rose-600 text-white font-bold p-3.5 rounded-2xl shadow-md text-left text-sm flex items-center justify-between";
+        clickedBtn.innerHTML = `<span>${selectedOpt}</span> <i class="fa-solid fa-circle-xmark"></i>`;
+
+        buttons.forEach(b => {
+          if (b.innerText.trim().startsWith(qData.correctOpt)) {
+            b.className = "w-full bg-emerald-100 border-2 border-emerald-400 text-emerald-800 font-bold p-3.5 rounded-2xl shadow-sm text-left text-sm flex items-center justify-between";
+          }
+        });
+
+        feedbackEl.className = "my-2 p-3 rounded-2xl text-center text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300 animate-pop";
+        feedbackEl.innerHTML = `💡 오답입니다! (모든 문제를 맞춰야 클리어 가능합니다)<br><span class="font-normal text-[11px]">정답: ${qData.correctOpt} - ${qData.exp}</span>`;
+
+        if (!userData.wrongNotes.some(item => item.id === qData.id)) {
+          userData.wrongNotes.push(qData);
+          saveUserData();
+        }
+      }
+
+      document.getElementById("quiz-next-container").classList.remove("hidden");
+    }
+
+    function advanceNextQuestion() {
+      currentQuizIndex++;
+      if (currentQuizIndex < currentQuizList.length) {
+        renderCurrentQuestion();
+      } else {
+        document.getElementById("quiz-progress-bar").style.width = `100%`;
+        
+        // Stage pass validation: Must answer ALL questions correctly
+        if (currentTopicId) {
+          if (hasFailedCurrentSession) {
+            alert(`❌ '${currentTopicTitle}' 클리어 실패!\n한 문제 이상 틀려서 다음 단원이 열리지 않으며 쌀도 획득할 수 없습니다.\n다시 도전해보세요! 🔥`);
+          } else {
+            const rewardRice = 36;
+            userData.score += rewardRice;
+
+            if (!userData.clearedStageIds.includes(currentTopicId)) {
+              userData.clearedStageIds.push(currentTopicId);
+            }
+
+            saveUserData();
+            updateUIHeader();
+
+            alert(`🎉 PERFECT! '${currentTopicTitle}' 퍼펙트 클리어!\n5문제를 모두 맞혀 쌀 ${rewardRice}석을 획득하고 다음 단원을 해금했습니다! 🌾`);
+            checkAutoPromotion();
+          }
+        } else {
+          alert(`🎉 학습이 완료되었습니다!`);
+        }
+
+        showScreen("stages");
+      }
+    }
+
+    function renderWrongNotesScreen() {
+      const listEl = document.getElementById("wrong-notes-list");
+      const actionEl = document.getElementById("wrong-notes-action-container");
+
+      listEl.innerHTML = "";
+      actionEl.innerHTML = "";
+
+      if (!userData.wrongNotes || userData.wrongNotes.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white border-2 border-slate-200 rounded-2xl p-6 text-center space-y-2">
+            <div class="text-3xl">👏</div>
+            <p class="font-bold text-slate-700 text-sm">오답 노트가 비어있습니다!</p>
+            <p class="text-xs text-slate-400">틀린 문제가 발생하면 여기에 자동으로 기록됩니다.</p>
+          </div>
+        `;
+        return;
+      }
+
+      actionEl.innerHTML = `
+        <button onclick="startWrongNotesQuizSession()" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-jua text-lg py-3 rounded-2xl shadow-lg border-b-4 border-rose-700 active:scale-95 transition">
+          <i class="fa-solid fa-arrows-rotate mr-1.5"></i> 오답 문제 재도전 (${userData.wrongNotes.length}문제)
+        </button>
+      `;
+
+      userData.wrongNotes.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "bg-white border-2 border-rose-100 rounded-2xl p-3.5 shadow-sm space-y-2 relative";
+        card.innerHTML = `
+          <div class="flex justify-between items-center text-xs">
+            <span class="bg-rose-100 text-rose-700 px-2 py-0.5 rounded-md font-bold">오답 #${index + 1}</span>
+            <button onclick="removeWrongNote('${item.id}')" class="text-slate-400 hover:text-rose-600 font-bold p-1">
+              삭제 &times;
+            </button>
+          </div>
+          <p class="font-bold text-slate-800 text-sm leading-snug">${item.q}</p>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 text-xs text-emerald-900 font-bold">
+            <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> 정답: ${item.correctOpt}
+          </div>
+          <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg leading-relaxed">${item.exp}</p>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function removeWrongNote(qId) {
+      userData.wrongNotes = userData.wrongNotes.filter(item => item.id !== qId);
+      saveUserData();
+      renderWrongNotesScreen();
+    }
+
+    function startWrongNotesQuizSession() {
+      if (!userData.wrongNotes || userData.wrongNotes.length === 0) return;
+
+      currentTopicId = "";
+      currentTopicTitle = "오답 복습 노다지";
+      currentQuizList = [...userData.wrongNotes];
+      currentQuizIndex = 0;
+      sessionScoreEarned = 0;
+
+      document.getElementById("screen-wrong-notes").classList.add("hidden");
+      document.getElementById("screen-quiz").classList.remove("hidden");
+      document.getElementById("quiz-topic-title").innerText = currentTopicTitle;
+
+      renderCurrentQuestion();
+    }
+
+    function addCustomQuiz() {
+      const editId = document.getElementById("my-quiz-edit-id").value;
+      const q = document.getElementById("my-quiz-q").value.trim();
+      const opt1 = document.getElementById("my-quiz-opt1").value.trim();
+      const opt2 = document.getElementById("my-quiz-opt2").value.trim();
+      const opt3 = document.getElementById("my-quiz-opt3").value.trim();
+      const opt4 = document.getElementById("my-quiz-opt4").value.trim();
+      const exp = document.getElementById("my-quiz-exp").value.trim() || "해설이 등록되지 않았습니다.";
+
+      if (!q || !opt1 || !opt2 || !opt3 || !opt4) {
+        alert("질문과 4가지 보기를 모두 입력해 주세요!");
+        return;
+      }
+
+      if (editId) {
+        const index = userData.myCustomQuizzes.findIndex(item => item.id == editId);
+        if (index !== -1) {
+          userData.myCustomQuizzes[index] = {
+            id: Number(editId),
+            q: q,
+            opts: [opt1, opt2, opt3, opt4],
+            correctOpt: opt1,
+            diff: "A",
+            exp: exp
+          };
+        }
+      } else {
+        const newQuiz = {
+          id: Date.now(),
+          q: q,
+          opts: [opt1, opt2, opt3, opt4],
+          correctOpt: opt1,
+          diff: "A",
+          exp: exp
+        };
+        userData.myCustomQuizzes.unshift(newQuiz);
+      }
+
+      saveUserData();
+      resetCustomQuizForm();
+      renderMyQuizzesScreen();
+    }
+
+    function editCustomQuiz(id) {
+      const quiz = userData.myCustomQuizzes.find(item => item.id === id);
+      if (!quiz) return;
+
+      document.getElementById("my-quiz-edit-id").value = quiz.id;
+      document.getElementById("my-quiz-q").value = quiz.q;
+      document.getElementById("my-quiz-opt1").value = quiz.correctOpt;
+      
+      const wrongOpts = quiz.opts.filter(opt => opt !== quiz.correctOpt);
+      document.getElementById("my-quiz-opt2").value = wrongOpts[0] || "";
+      document.getElementById("my-quiz-opt3").value = wrongOpts[1] || "";
+      document.getElementById("my-quiz-opt4").value = wrongOpts[2] || "";
+      
+      document.getElementById("my-quiz-exp").value = quiz.exp;
+
+      document.getElementById("my-quiz-form-title").innerHTML = `<i class="fa-solid fa-pen text-indigo-500 mr-1"></i> 문제 수정하기`;
+      document.getElementById("btn-save-my-quiz").innerText = "💾 수정 완료";
+      document.getElementById("btn-cancel-edit-quiz").classList.remove("hidden");
+
+      document.getElementById("screen-my-quizzes").scrollTop = 0;
+    }
+
+    function cancelEditCustomQuiz() {
+      resetCustomQuizForm();
+    }
+
+    function resetCustomQuizForm() {
+      document.getElementById("my-quiz-edit-id").value = "";
+      document.getElementById("my-quiz-q").value = "";
+      document.getElementById("my-quiz-opt1").value = "";
+      document.getElementById("my-quiz-opt2").value = "";
+      document.getElementById("my-quiz-opt3").value = "";
+      document.getElementById("my-quiz-opt4").value = "";
+      document.getElementById("my-quiz-exp").value = "";
+
+      document.getElementById("my-quiz-form-title").innerHTML = `<i class="fa-solid fa-plus-circle text-indigo-500 mr-1"></i> 새 문제 만들기`;
+      document.getElementById("btn-save-my-quiz").innerText = "➕ 문제 저장하기";
+      document.getElementById("btn-cancel-edit-quiz").classList.add("hidden");
+    }
+
+    function deleteCustomQuiz(id) {
+      if (confirm("이 문제를 삭제하시겠습니까?")) {
+        userData.myCustomQuizzes = userData.myCustomQuizzes.filter(q => q.id !== id);
+        saveUserData();
+        if (document.getElementById("my-quiz-edit-id").value == id) {
+          resetCustomQuizForm();
+        }
+        renderMyQuizzesScreen();
+      }
+    }
+
+    function renderMyQuizzesScreen() {
+      const listEl = document.getElementById("my-quiz-list");
+      const actionEl = document.getElementById("my-quiz-action-container");
+
+      listEl.innerHTML = "";
+      actionEl.innerHTML = "";
+
+      if (!userData.myCustomQuizzes || userData.myCustomQuizzes.length === 0) {
+        listEl.innerHTML = `
+          <div class="bg-white border-2 border-slate-200 rounded-2xl p-6 text-center space-y-2">
+            <div class="text-3xl">📝</div>
+            <p class="font-bold text-slate-700 text-sm">등록된 나만의 퀴즈가 없습니다!</p>
+            <p class="text-xs text-slate-400">위 양식을 작성해 나만의 퀴즈를 직접 만들어 보세요.</p>
+          </div>
+        `;
+        return;
+      }
+
+      actionEl.innerHTML = `
+        <button onclick="startMyQuizSession()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-jua text-lg py-3 rounded-2xl shadow-lg border-b-4 border-indigo-800 active:scale-95 transition">
+          <i class="fa-solid fa-play mr-1.5"></i> 내가 만든 퀴즈 풀기 (${userData.myCustomQuizzes.length}문제)
+        </button>
+      `;
+
+      userData.myCustomQuizzes.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "bg-white border-2 border-indigo-100 rounded-2xl p-3.5 shadow-sm space-y-2 relative";
+        card.innerHTML = `
+          <div class="flex justify-between items-center text-xs">
+            <span class="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-md font-bold">내 퀴즈 #${userData.myCustomQuizzes.length - index}</span>
+            <div class="flex items-center gap-2">
+              <button onclick="editCustomQuiz(${item.id})" class="text-indigo-600 hover:text-indigo-800 font-bold p-1">
+                <i class="fa-solid fa-pen-to-square"></i> 수정
+              </button>
+              <button onclick="deleteCustomQuiz(${item.id})" class="text-rose-500 hover:text-rose-700 font-bold p-1">
+                <i class="fa-solid fa-trash-can"></i> 삭제
+              </button>
+            </div>
+          </div>
+          <p class="font-bold text-slate-800 text-sm leading-snug">${item.q}</p>
+          <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 text-xs text-emerald-900 font-bold">
+            <i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> 정답: ${item.correctOpt}
+          </div>
+          <p class="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg leading-relaxed">${item.exp}</p>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function startMyQuizSession() {
+      if (!userData.myCustomQuizzes || userData.myCustomQuizzes.length === 0) return;
+
+      currentTopicId = "";
+      currentTopicTitle = "내가 만든 퀴즈함";
+      currentQuizList = [...userData.myCustomQuizzes];
+      currentQuizIndex = 0;
+      sessionScoreEarned = 0;
+
+      document.getElementById("screen-my-quizzes").classList.add("hidden");
+      document.getElementById("screen-quiz").classList.remove("hidden");
+      document.getElementById("quiz-topic-title").innerText = currentTopicTitle;
+
+      renderCurrentQuestion();
+    }
+
+    /* Initialize App */
+    window.onload = function() {
+      loadUserData();
+      updateUIHeader();
+      renderStages();
+    };
+  </script>
+</body>
+</html>
